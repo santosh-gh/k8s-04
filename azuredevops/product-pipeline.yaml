@@ -7,7 +7,7 @@ variables:
   namespace: 'default'
   imageName: 'product'
   #tag: $(Build.BuildId)
-  tag: latest
+  tag: v1
 
 pool:
   vmImage: ubuntu-latest
@@ -30,40 +30,3 @@ stages:
               imageName: $(imageName)
               dockerFilePath: '$(Build.sourcesdirectory)/app/product-service/Dockerfile'
               tag: $(tag)
-          
-          # Task 2 publish build artifacts
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: '$(System.DefaultWorkingDirectory)/manifests//product'
-              ArtifactName: 'product-manifests'
-              publishLocation: 'Container'
-
-  - stage: Deploy
-    displayName: Deploy stage
-    dependsOn: Build
-
-    jobs:
-    - deployment: Deploy
-      displayName: Deploy
-      pool:
-        vmImage: ubuntu-latest
-      environment: 'Dev'
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - task: DownloadPipelineArtifact@2
-              inputs:
-                buildType: 'current'                
-                artifactName: 'product-manifests' 
-                targetPath: '$(System.ArtifactsDirectory)/manifests/product'
-            
-            - template: appTemplates/deploy.yml
-              parameters:
-                serviceConnection: $(serviceConnection)
-                aksObject: 'product'
-                manifestPath: $(System.ArtifactsDirectory)/manifests/product
-                aksResourceGroup: $(aksResourceGroup)                
-                aksCluster: $(aksCluster)
-                namespace: $(namespace)
-                

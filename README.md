@@ -1,69 +1,109 @@
-# k8s
+# Deploying microservice applications in AKS using ACR image repositories with Helm, Azure DevOps Infra (bicep) and App Pipelines
+
+Prerequisites
+
+    A valid Azure subscription : https://portal.azure.com/
+
+    Azure CLI : https://learn.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
+
+    kubectl: https://kubernetes.io/docs/tasks/tools/
+
+    bash shell: Most Linux/macOS systems already have this. For Windows, use Git Bash or WSL: https://www.atlassian.com/git/tutorials/git-bash
+
+    Docker Desktop for building and pushing images locally: https://docs.docker.com/desktop/    
+
+    Install Bicep: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/install
+
+    Install Helm: https://helm.sh/docs/intro/install/
 
 # Login to Azure
+
     az login
     az account set --subscription=<subscriptionId>
     az account show
 
 # Show existing resources
+
     az resource list
 
-# Create RG, ACR and AKS
-    ./infra/azcli/script.sh
+# Azure Identity 
 
-# Variables
-    RESOURCE_GROUP="rg-onlinestore-dev-uksouth-001"
-    AKS_NAME="aks-onlinestore-dev-uksouth-001"
-    ACR_NAME="acronlinestoredevuksouth001"
+    Create Service Principal (app reg) or Managed Identity for Azure DevOps to authenticate with Azure
 
-# connect to cluster
-    az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_NAME
+# Configure Azure DevOps
+
+    Create Organization, Project and Permissions
+
+# Azure DevOps Service Connection
+
+    Create azure DevOps Service Connection to Azure (ARM) for Infrastructure Pipelines
+
+# Docker Registry Service Connection
+
+    Create azure DevOps Docker Registry Service Connection to ACR
+
+# Kubernetes Service Connection
+
+    Kubernetes Service Connection to deploy using kubectl or Helm
+
+# Configure and run the Infra Pipeline (bicep)
+
+    infra-pipeline.yml
+
+# Connect to cluster
+
+    az aks get-credentials --resource-group $(RESOURCE_GROUP) --name $(AKS_NAME)
 
 # Short name for kubectl
+
     alias k=kubectl
 
 # Show all existing objects
+
     k get all
 
-# Log in to ACR
-    az acr login --name $ACR_NAME
-    
-# You may want to use 'az acr login -n acronlinestoredevuksouth001 --expose-token' to get a refresh token, which does not require Docker to be installed.
+# Configure and run the Order Build Pipeline
 
-# Tag and push the Docker images
+    order-pipeline.yaml
 
-    # Order Service
-    docker build -t order ./app/order-service 
-    docker tag order $ACR_NAME.azurecr.io/order:v1
-    docker push $ACR_NAME.azurecr.io/order:v1
+# Configure and run the Product Build Pipeline
 
-    # Product Service
-    docker build -t product ./app/product-service 
-    docker tag product $ACR_NAME.azurecr.io/product:v1
-    docker push $ACR_NAME.azurecr.io/product:v1
+    product-pipeline.yaml
 
-    # Store Front Service
-    docker build -t store-front ./app/store-front
-    docker tag store-front $ACR_NAME.azurecr.io/store-front:v1
-    docker push $ACR_NAME.azurecr.io/store-front:v1
+# Configure and run the store front Build Pipeline
+ 
+    store-front-pipeline.yaml
 
-# Deploy all the services using manifest files
-    k apply -f ./manifests
+# Configure and run the rabbitmq Build Pipeline
 
-# Delete all the services using manifest files  
-    k delete -f ./manifests
+    order-pipeline.yaml
 
-# Deploy all the services using helm chart
-    helm install storeapp ./helmchart
-# Upgrade using helm chart
-    helm upgrade storeapp ./helmchart
-# Delete Services using helm
-    helm uninstall storeapp
+# Write Kubernetes YAML Manifests for the applicatons
+
+    configmap.yml
+    order-deployment.yml
+    order-service.yml
+    product-deployment.yml
+    product-service.yml
+    store-front-deployment.yml
+    store-front-service.yml
+    rabbitmq-deployment.yml
+    rabbitmq-service.yml
+
+# Configure and run the app deploy Pipeline using HELM
+
+    Can be done in any of the following 3 ways:
+
+    1. Using helem command : app-deploy-pipeline.yml
+    2. Using HelmDeploy@1 task and helm chart in build agent : app-deploy-pipeline(HelmDeployTask).yml
+    3. Using HelmDeploy@1 task and helm chart in ACR : app-deploy-pipeline(helmchart in acr).yaml
+
+# Verify the Deployment
+
+    k get pods
+    k get services
+    Browse the app using http://<LoadBalancer public IP>:80
 
 # Clean the Azure resources
+
     az group delete --name rg-onlinestore-dev-uksouth-001 --yes --no-wait
-
-
-
-# helmify  
-helmify -f /manifests/ helmchart

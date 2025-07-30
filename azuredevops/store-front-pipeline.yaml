@@ -6,7 +6,7 @@ variables:
   aksResourceGroup: 'rg-onlinestore-dev-uksouth-001'
   namespace: 'default'
   imageName: 'store-front'
-  tag: latest
+  tag: v1
 
 pool:
   vmImage: ubuntu-latest
@@ -29,39 +29,3 @@ stages:
               imageName: $(imageName)
               dockerFilePath: '$(Build.sourcesdirectory)/app/store-front/Dockerfile'
               tag: $(tag)
-
-          # Task 2 publish build artifacts
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: '$(System.DefaultWorkingDirectory)/manifests/store-front'
-              ArtifactName: 'store-front-manifests'
-              publishLocation: 'Container'
-  
-  - stage: Deploy
-    displayName: Deploy stage
-    dependsOn: Build
-
-    jobs:
-    - deployment: Deploy
-      displayName: Deploy
-      pool:
-        vmImage: ubuntu-latest
-      environment: 'Dev'
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - task: DownloadPipelineArtifact@2
-              inputs:
-                buildType: 'current'                
-                artifactName: 'store-front-manifests' 
-                targetPath: '$(System.ArtifactsDirectory)/manifests/store-front'
-            
-            - template: appTemplates/deploy.yml
-              parameters:
-                serviceConnection: $(serviceConnection)
-                aksObject: 'store-front'
-                manifestPath: $(System.ArtifactsDirectory)/manifests/store-front
-                aksResourceGroup: $(aksResourceGroup)                
-                aksCluster: $(aksCluster)
-                namespace: $(namespace)
