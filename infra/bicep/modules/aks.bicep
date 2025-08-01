@@ -30,6 +30,10 @@ resource aks 'Microsoft.ContainerService/managedClusters@2025-05-01' = {
   identity: {
    type: 'SystemAssigned' 
   }
+  sku: {
+    name: 'Base'
+    tier: 'Standard'
+  }
   properties: {
     dnsPrefix: dnsPrefix
     agentPoolProfiles: [

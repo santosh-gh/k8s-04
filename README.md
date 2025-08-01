@@ -26,33 +26,15 @@ Prerequisites
 
     az resource list
 
-# Azure Identity 
+# Create Resources
 
-    Create Service Principal (app reg) or Managed Identity for Azure DevOps to authenticate with Azure
-
-# Configure Azure DevOps
-
-    Create Organization, Project and Permissions
-
-# Azure DevOps Service Connection
-
-    Create azure DevOps Service Connection to Azure (ARM) for Infrastructure Pipelines
-
-# Docker Registry Service Connection
-
-    Create azure DevOps Docker Registry Service Connection to ACR
-
-# Kubernetes Service Connection
-
-    Kubernetes Service Connection to deploy using kubectl or Helm
-
-# Configure and run the Infra Pipeline (bicep)
-
-    infra-pipeline.yml
+    ./infra/azcli/script.sh
 
 # Connect to cluster
 
-    az aks get-credentials --resource-group $(RESOURCE_GROUP) --name $(AKS_NAME)
+    RESOURCE_GROUP="rg-onlinestore-dev-uksouth-001"
+    AKS_NAME="aks-onlinestore-dev-uksouth-001"
+    az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_NAME
 
 # Short name for kubectl
 
@@ -62,41 +44,36 @@ Prerequisites
 
     k get all
 
-# Configure and run the Order Build Pipeline
 
-    order-pipeline.yaml
+# Log in to ACR
 
-# Configure and run the Product Build Pipeline
+    ACR_NAME="acronlinestoredevuksouth001"
+    az acr login --name $ACR_NAME
 
-    product-pipeline.yaml
+# Build and push the Docker images to ACR
 
-# Configure and run the store front Build Pipeline
- 
-    store-front-pipeline.yaml
+    # Order Service
+    docker build -t order ./app/order-service 
+    docker tag order:latest $ACR_NAME.azurecr.io/order:v1
+    docker push $ACR_NAME.azurecr.io/order:v1
 
-# Configure and run the rabbitmq Build Pipeline
+    # Product Service
+    docker build -t product ./app/product-service 
+    docker tag product:latest $ACR_NAME.azurecr.io/product:v1
+    docker push $ACR_NAME.azurecr.io/product:v1
 
-    order-pipeline.yaml
+    # Store Front Service
+    docker build -t store-front ./app/store-front
+    docker tag store-front:latest $ACR_NAME.azurecr.io/store-front:v1
+    docker push $ACR_NAME.azurecr.io/store-front:v1
 
-# Write Kubernetes YAML Manifests for the applicatons
+# helmify 
 
-    configmap.yml
-    order-deployment.yml
-    order-service.yml
-    product-deployment.yml
-    product-service.yml
-    store-front-deployment.yml
-    store-front-service.yml
-    rabbitmq-deployment.yml
-    rabbitmq-service.yml
+    helmify -f ./manifests helmchart
 
-# Configure and run the app deploy Pipeline using HELM
+# Helm Deploy
 
-    Can be done in any of the following 3 ways:
-
-    1. Using helem command : app-deploy-pipeline.yml
-    2. Using HelmDeploy@1 task and helm chart in build agent : app-deploy-pipeline(HelmDeployTask).yml
-    3. Using HelmDeploy@1 task and helm chart in ACR : app-deploy-pipeline(helmchart in acr).yaml
+    helm install store-release ./helmchart
 
 # Verify the Deployment
 

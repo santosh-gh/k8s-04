@@ -26,7 +26,7 @@ param subnets array = []
 param agentCount int = 1
 
 @description('The size of the Virtual Machine.')
-param agentVMSize string = 'standard_d2s_v3'
+param agentVMSize string = 'Standard_B2s'
 
 @description('User name for the Linux Virtual Machines.')
 param linuxAdminUsername string = ''
