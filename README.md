@@ -1,77 +1,127 @@
-# Deploying microservice applications in AKS using ACR image repositories with Helm, Azure DevOps Infra (bicep) and App Pipelines
+# Deploying microservice applications in AKS using Azure DevOps and Helm
 
-Prerequisites
+    A sample multi-container application with a group of microservices and web front ends 
+    that simulate a retail scenario.
 
-    A valid Azure subscription : https://portal.azure.com/
+    Part1 (Manual Deployment using comand line tools):
+    AzCLI, Docker Desktop and kubectl: https://github.com/santosh-gh/k8s-01
+    YouTube: https://youtu.be/zoJ7MMPVqFY
 
-    Azure CLI : https://learn.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest
+    Part2 (Automated Deployment using Azure DevOps Pipeline): https://github.com/santosh-gh/k8s-02
+    YouTube: https://youtu.be/nnomaZVHg9I
 
-    kubectl: https://kubernetes.io/docs/tasks/tools/
+    Part3 (Automated Infra Deployment using Bicep and Azure DevOps Pipeline): https://github.com/santosh-gh/k8s-03
+    YouTube: https://youtu.be/nnomaZVHg9I
 
-    bash shell: Most Linux/macOS systems already have this. For Windows, use Git Bash or WSL: https://www.atlassian.com/git/tutorials/git-bash
+# Architesture
 
-    Docker Desktop for building and pushing images locally: https://docs.docker.com/desktop/    
+![Store Architesture](aks-store-architecture.png)
 
-    Install Bicep: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/install
+    # Store front: Web application for customers to view products and place orders.
+    # Product service: Shows product information.
+    # Order service: Places orders.
+    # RabbitMQ: Message queue for an order queue.
 
-    Install Helm: https://helm.sh/docs/intro/install/
+# Directory Structure
 
-# Login to Azure
+![Directory Structure](image.png) 
 
-    az login
-    az account set --subscription=<subscriptionId>
-    az account show
+# YouTube: 
 
-# Show existing resources
+    https://youtu.be/zoJ7MMPVqFY    
+ 
+# GitHub Repository (source code)
 
-    az resource list
-
-# Create Resources
-
-    ./infra/azcli/script.sh
-
-# Connect to cluster
-
-    RESOURCE_GROUP="rg-onlinestore-dev-uksouth-001"
-    AKS_NAME="aks-onlinestore-dev-uksouth-001"
-    az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_NAME
-
-# Short name for kubectl
-
-    alias k=kubectl
-
-# Show all existing objects
-
-    k get all
+    https://github.com/santosh-gh/k8s-04
 
 
-# Log in to ACR
+# Deploying microservice applications in AKS using 
 
-    ACR_NAME="acronlinestoredevuksouth001"
-    az acr login --name $ACR_NAME
+    Infra deploy: using command line AzCLI/Bicep
 
-# Build and push the Docker images to ACR
+    Docker build and push images to ACR: Docker Desktop command line
 
-    # Order Service
-    docker build -t order ./app/order-service 
-    docker tag order:latest $ACR_NAME.azurecr.io/order:v1
-    docker push $ACR_NAME.azurecr.io/order:v1
+    App Deploymnet: Helm command
 
-    # Product Service
-    docker build -t product ./app/product-service 
-    docker tag product:latest $ACR_NAME.azurecr.io/product:v1
-    docker push $ACR_NAME.azurecr.io/product:v1
+    Helmchart: Use helm command 
+    helm install store-release ./helmchart
 
-    # Store Front Service
-    docker build -t store-front ./app/store-front
-    docker tag store-front:latest $ACR_NAME.azurecr.io/store-front:v1
-    docker push $ACR_NAME.azurecr.io/store-front:v1
+# Steps
 
-# helmify 
+    1. Infra deployment using AzCLI/Bicep
+    2. Build and push images to ACR: Docker
+    3. Helm install and Helmfy
+    4. App deployment: helm install store-release ./helmchart
+    5. Validate and Access the application
+    6. Clean the Azure resources
+
+# Infra deployment
+
+    # Login to Azure
+
+        az login
+        az account set --subscription=<subscriptionId>
+        az account show
+
+    # Show existing resources
+
+        az resource list
+
+    # Create RG, ACR and AKS
+
+        # AzCLI
+        ./infra/azcli/script.sh
+
+        OR
+
+        # Bicep
+        az deployment sub create --location uksouth --template-file ./infra/bicep/main.bicep --parameters ./infra/bicep/main.bicepparam
+
+    # Connect to cluster
+
+        RESOURCE_GROUP="rg-onlinestore-dev-uksouth-001"
+        AKS_NAME="aks-onlinestore-dev-uksouth-001"
+        az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_NAME
+
+    # Short name for kubectl
+
+    # Show all existing objects
+
+        k get all
+
+# Docker Build and Push
+
+    # Log in to ACR
+
+        ACR_NAME="acronlinestoredevuksouth001"
+        az acr login --name $ACR_NAME
+
+    # Build and push the Docker images to ACR
+
+        # Order Service
+        docker build -t order ./app/order-service 
+        docker tag order:latest $ACR_NAME.azurecr.io/order:v1
+        docker push $ACR_NAME.azurecr.io/order:v1
+
+        # Product Service
+        docker build -t product ./app/product-service 
+        docker tag product:latest $ACR_NAME.azurecr.io/product:v1
+        docker push $ACR_NAME.azurecr.io/product:v1
+
+        # Store Front Service
+        docker build -t store-front ./app/store-front 
+        docker tag store-front:latest $ACR_NAME.azurecr.io/store-front:v1
+        docker push $ACR_NAME.azurecr.io/store-front:v1
+
+        docker images
+
+# Helm and Helmify
+
+    # helmify 
 
     helmify -f ./manifests helmchart
 
-# Helm Deploy
+    # Helm Deploy
 
     helm install store-release ./helmchart
 
@@ -79,6 +129,7 @@ Prerequisites
 
     k get pods
     k get services
+    curl <LoadBalancer public IP>:80
     Browse the app using http://<LoadBalancer public IP>:80
 
 # Clean the Azure resources
