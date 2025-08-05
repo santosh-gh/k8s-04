@@ -15,10 +15,6 @@ param location string
 
 var resourceLocator = '${projectName}-${environment}-${location}-${resourceInstance}'
 
-// Netework parameters
-param vnetAddressPrefix string
-param subnets array = []
-
 // Parameters for AKS
 @description('The number of nodes for the cluster.')
 @minValue(1)
@@ -27,12 +23,6 @@ param agentCount int = 1
 
 @description('The size of the Virtual Machine.')
 param agentVMSize string = 'Standard_B2s'
-
-@description('User name for the Linux Virtual Machines.')
-param linuxAdminUsername string = ''
-
-@description('Configure all linux machines with the SSH RSA public key string. Your key should include three parts, for example \'ssh-rsa AAAAB...snip...UcyupgH azureuser@linuxvm\'')
-param sshRSAPublicKey string = ''
 
 @description('Optional DNS Prefix to use with hosted Kubernetes API server FQDN')
 param dnsPrefix string = 'aks${projectName}'
@@ -69,8 +59,6 @@ module aks 'modules/aks.bicep' = {
     location: location
     agentCount: agentCount
     agentVMSize: agentVMSize
-    linuxAdminUsername: linuxAdminUsername
-    sshRSAPublicKey: sshRSAPublicKey
     dnsPrefix: dnsPrefix
     osDiskSizeGB: osDiskSizeGB
   }
@@ -85,15 +73,3 @@ module roleAssignments 'modules/roleassignments.bicep' = {
     acrPullRoleDefinitionId: acrPullRoleDefinitionId    
   }
 }
-
-// // Deploy vnet with subnets
-// module network 'modules/network.bicep' = {
-//   name: 'NetworkDeploy'
-//   scope: resourceGroup(resGroup.name)
-//   params: {
-//     vnetName: 'vnet-${resourceLocator}'
-//     location: location
-//     vnetAddressPrefix: vnetAddressPrefix
-//     subnets: subnets
-//   }  
-// }
