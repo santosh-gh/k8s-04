@@ -1,17 +1,23 @@
-# Deploying microservice applications in AKS using Azure DevOps and Helm
+# Part 4: Deploying microservice applications in AKS using Helm Chat
 
     A sample multi-container application with a group of microservices and web front ends 
     that simulate a retail scenario.
 
-    Part1 (Manual Deployment using comand line tools):
-    AzCLI, Docker Desktop and kubectl: https://github.com/santosh-gh/k8s-01
+    Part1: Manual Deployment using comand line tools (AzCLI, Docker Desktop and kubectl)  
+    GitHub: https://github.com/santosh-gh/k8s-01
     YouTube: https://youtu.be/zoJ7MMPVqFY
 
-    Part2 (Automated Deployment using Azure DevOps Pipeline): https://github.com/santosh-gh/k8s-02
+    Part2: Automated Deployment using Azure DevOps Pipeline
+    GitHub: https://github.com/santosh-gh/k8s-02
     YouTube: https://youtu.be/nnomaZVHg9I
 
-    Part3 (Automated Infra Deployment using Bicep and Azure DevOps Pipeline): https://github.com/santosh-gh/k8s-03
-    YouTube: https://youtu.be/nnomaZVHg9I
+    Part3: Automated Infra Deployment using Bicep and Azure DevOps Pipeline
+    GitHub: https://github.com/santosh-gh/k8s-03
+    YouTube: https://www.youtube.com/watch?v=5PAdDPHn8F8
+
+    Part4: Deploying microservice applications in AKS using Helm Chat
+    GitHub: https://github.com/santosh-gh/k8s-04
+    YouTube: https://www.youtube.com/watch?v=5PAdDPHn8F8
 
 # Architesture
 
@@ -26,33 +32,56 @@
 
 ![Directory Structure](image.png) 
 
-# YouTube: 
-
-    https://youtu.be/zoJ7MMPVqFY    
- 
-# GitHub Repository (source code)
-
-    https://github.com/santosh-gh/k8s-04
-
-
 # Deploying microservice applications in AKS using 
 
-    Infra deploy: using command line AzCLI/Bicep
+    Infra deploy: using command line AzCLI/Bicep 
+        or 
+    Pipelines azcli-infra-pipeline.yml/bicep-infra-pipeline.yml
 
     Docker build and push images to ACR: Docker Desktop command line
 
     App Deploymnet: Helm command
 
-    Helmchart: Use helm command 
-    helm install store-release ./helmchart
+    helm install online-store ./helmchart
 
 # Steps
 
-    1. Infra deployment using AzCLI/Bicep
-    2. Build and push images to ACR: Docker
+    1. Infra deployment using AzCLI/Bicep command line or 
+       Pipelines azcli-infra-pipeline.yml/bicep-infra-pipeline.yml
+
+    2. Build and push images to ACR: Docker command
+
     3. Helm install and Helmfy
-    4. App deployment: helm install store-release ./helmchart
+       https://helm.sh/docs/intro/install/
+
+       https://github.com/arttor/helmify/releases
+
+       Advantages of helm over kubectl
+
+       Helm uses templates with variables, so no need to duplicate YAML files for each environment
+
+       Helm supports versioned releases and can be roll back to a previous release easily
+
+       helm list
+       helm rollback online-store 1
+
+
+       Parameterization per Environment using enverionment  specific <env>-values.yaml
+       helm install online-store ./helmchart -f dev-values-.yaml
+       helm install online-store ./helmchart -f test-values.yaml
+
+       Helm keeps track of installed releases, values, and history
+       helm list
+       helm get all online-store
+
+
+
+
+    4. App deployment: 
+       helm install online-store ./helmchart
+
     5. Validate and Access the application
+
     6. Clean the Azure resources
 
 # Infra deployment
@@ -123,7 +152,9 @@
 
     # Helm Deploy
 
-    helm install store-release ./helmchart
+    helm install online-store ./helmchart
+
+    helm uninstall online-store
 
 # Verify the Deployment
 

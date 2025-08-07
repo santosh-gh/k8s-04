@@ -62,7 +62,7 @@ spec:
             periodSeconds: 3
       initContainers:
         - name: wait-for-rabbitmq
-          image: busybox
+          image: busybox:latest
           command:
             ["sh", "-c", "until nc -zv rabbitmq 5672; do echo waiting for rabbitmq; sleep 2; done;"]
           resources:
