@@ -17,7 +17,7 @@
 
     Part4: Deploying microservice applications in AKS using Helm Chat
     GitHub: https://github.com/santosh-gh/k8s-04
-    YouTube: https://www.youtube.com/watch?v=5PAdDPHn8F8
+    YouTube: https://www.youtube.com/watch?v=VAiR3sNavh0
 
 # Architesture
 
@@ -65,17 +65,13 @@
        helm list
        helm rollback online-store 1
 
-
-       Parameterization per Environment using enverionment  specific <env>-values.yaml
+       Parameterization per Environment using enverionment  specific values.yaml
        helm install online-store ./helmchart -f dev-values-.yaml
        helm install online-store ./helmchart -f test-values.yaml
 
        Helm keeps track of installed releases, values, and history
        helm list
        helm get all online-store
-
-
-
 
     4. App deployment: 
        helm install online-store ./helmchart
@@ -139,8 +135,8 @@
 
         # Store Front Service
         docker build -t store-front ./app/store-front 
-        docker tag store-front:latest $ACR_NAME.azurecr.io/store-front:v1
-        docker push $ACR_NAME.azurecr.io/store-front:v1
+        docker tag store-front:latest $ACR_NAME.azurecr.io/store-front:v2
+        docker push $ACR_NAME.azurecr.io/store-front:v2
 
         docker images
 
